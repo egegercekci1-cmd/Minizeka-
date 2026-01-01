@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body {
+  background:#111;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+.card {
+  border:1px solid #333;
+  padding:10px;
+  margin-bottom:10px;
+}
+button {
+  margin-right:5px;
+  padding:5px 10px;
+}
+</style>
+</head>
+<body>
+
+<h2>🔐 Admin Panel</h2>
+<div id="list"></div>
+
+<script>
+// 🔥 AYNI FIREBASE AYARLARI
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "DOMAIN",
+  projectId: "PROJECT_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const list = document.getElementById("list");
+
+async function load(){
+  list.innerHTML="";
+  const snap = await db.collection("pending").get();
+  snap.forEach(doc=>{
+    const d = document.createElement("div");
+    d.className="card";
+    d.innerHTML = `
+      <b>Soru:</b> ${doc.id}<br>
+      <b>Cevap:</b> ${doc.data().answer}<br><br>
+      <button onclick="approve('${doc.id}','${doc.data().answer}')">✅ Onayla</button>
+      <button onclick="remove('${doc.id}')">🗑️ Sil</button>
+    `;
+    list.appendChild(d);
+  });
+}
+
+async function approve(q,a){
+  await db.collection("memory").doc(q).set({
+    answer:a,
+    approved:true
+  });
+  await db.collection("pending").doc(q).delete();
+  load();
+}
+
+async function remove(q){
+  await db.collection("pending").doc(q).delete();
+  load();
+}
+
+load();
+</script>
+
+</body>
+</html>
