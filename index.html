@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>MiniZeka</title>
+<style>
+    body {
+        font-family: Arial;
+        background: #111;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    #box {
+        width: 90%;
+        max-width: 400px;
+        background: #222;
+        padding: 15px;
+        border-radius: 10px;
+    }
+    #chat {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #333;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    input, button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: none;
+    }
+    button {
+        background: #00bcd4;
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div id="box">
+    <h2>🤖 MiniZeka</h2>
+    <div id="chat"></div>
+    <input id="input" placeholder="Bir şey yaz...">
+    <button onclick="send()">Gönder</button>
+</div>
+
+<script>
+let memory = JSON.parse(localStorage.getItem("minizeka")) || {};
+let waitingForTeach = null;
+
+function addMessage(text, who="ai") {
+    const chat = document.getElementById("chat");
+    const div = document.createElement("div");
+    div.innerText = (who === "user" ? "🧑 " : "🤖 ") + text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function send() {
+    const input = document.getElementById("input");
+    const text = input.value.trim().toLowerCase();
+    if (!text) return;
+    input.value = "";
+
+    addMessage(text, "user");
+
+    if (waitingForTeach) {
+        memory[waitingForTeach] = text;
+        localStorage.setItem("minizeka", JSON.stringify(memory));
+        addMessage("Teşekkürler, öğrendim 😄");
+        waitingForTeach = null;
+        return;
+    }
+
+    if (memory[text]) {
+        addMessage(memory[text]);
+    } else {
+        addMessage("Bunu bilmiyorum. Bana öğretir misin?");
+        waitingForTeach = text;
+    }
+}
+</script>
+
+</body>
+</html>
